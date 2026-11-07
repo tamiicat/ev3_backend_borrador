@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import Hotel, Vuelo, Paquete, Itinerario, Resena
 
+# Personalización del panel principal
 admin.site.site_header = "Agencia de Viajes - Panel de Administración"
 admin.site.site_title = "Admin Viajes"
 admin.site.index_title = "Gestión de Catálogo y Reservas"
@@ -22,10 +23,25 @@ class VueloAdmin(admin.ModelAdmin):
 
 @admin.register(Paquete)
 class PaqueteAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'precio_paquete', 'cupos_disponibles', 'fecha_inicio', 'fecha_fin')
-    list_filter = ('fecha_inicio', 'fecha_fin')
-    search_fields = ('nombre', 'descripcion')
+    list_display = ('id', 'nombre', 'categoria', 'precio_paquete', 'cupos_disponibles', 'fecha_inicio')
+    list_filter = ('categoria', 'fecha_inicio', 'fecha_fin')
+    search_fields = ('id', 'nombre', 'descripcion')
     list_editable = ('precio_paquete', 'cupos_disponibles')
+    fieldsets = (
+        ('Información Principal', {
+            'fields': ('nombre', 'categoria', 'descripcion')
+        }),
+        ('Valores y Disponibilidad', {
+            'fields': ('precio_paquete', 'cupos_disponibles')
+        }),
+        ('Vigencia del Viaje', {
+            'fields': ('fecha_inicio', 'fecha_fin')
+        }),
+        ('Servicios Incluidos (Relaciones)', {
+            'fields': ('hoteles', 'vuelos'),
+            'classes': ('collapse',) 
+        }),
+    )
     filter_horizontal = ('hoteles', 'vuelos')
     list_per_page = 15
 

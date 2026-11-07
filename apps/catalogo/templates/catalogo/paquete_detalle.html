@@ -63,8 +63,9 @@
 
             <div class="border-top pt-4 mt-auto">
                 {% if paquete.cupos_disponibles > 0 %}
+                    {# Este formulario recibe las actividades marcadas en la tarjeta Itinerario (atributo form="form-reserva") #}
                     <form id="form-reserva" method="get" action="{% url 'pedidos:agregar' paquete.id %}">
-                        <div id="aviso-actividades" class="small text-muted mb-2 text-center"></div>
+                        <div id="aviso-seleccion" class="small text-muted mb-2 text-center"></div>
                         <button type="submit" id="btn-reservar" class="btn btn-info btn-lg w-100 py-3 fw-bold text-white shadow-sm">
                             Reservar (Quedan {{ paquete.cupos_disponibles }} cupos)
                         </button>
@@ -89,7 +90,7 @@
                 <li class="list-group-item p-0">
                     <label class="d-flex gap-3 p-3 mb-0 w-100" for="act-{{ itinerario.id }}" style="cursor: pointer;">
                         {% if paquete.cupos_disponibles > 0 %}
-                        <input class="form-check-input flex-shrink-0 mt-1 chk-actividad" type="checkbox"
+                        <input class="form-check-input flex-shrink-0 mt-1 chk-actividad rounded-circle" type="checkbox"
                             id="act-{{ itinerario.id }}" name="actividades" value="{{ itinerario.id }}"
                             form="form-reserva">
                         {% endif %}
@@ -113,41 +114,75 @@
 
     <div class="col-md-4">
         <div class="card h-100 border-0 shadow-sm">
-            <div class="card-header bg-info text-white fw-bold"><i class="bi bi-building me-2"></i>Hoteles Disponibles</div>
+            <div class="card-header bg-info text-white fw-bold d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-building me-2"></i>Hoteles Incluidos</span>
+                <span class="badge bg-light text-dark" id="contador-hoteles">0 / 5</span>
+            </div>
             <ul class="list-group list-group-flush">
                 {% for hotel in paquete.hoteles.all %}
-                <li class="list-group-item">
-                    <strong>{{ hotel.nombre }}</strong> ({{ hotel.categoria }})<br>
-                    <span class="text-muted small">{{ hotel.ciudad }} - {{ hotel.direccion }}</span>
+                <li class="list-group-item p-0">
+                    <label class="d-flex gap-3 p-3 mb-0 w-100" for="hotel-{{ hotel.id }}" style="cursor: pointer;">
+                        {% if paquete.cupos_disponibles > 0 %}
+                        <input class="form-check-input flex-shrink-0 mt-1 chk-hotel" type="radio"
+                            id="hotel-{{ hotel.id }}" name="hoteles" value="{{ hotel.id }}"
+                            form="form-reserva"{% if paquete.hoteles.count == 1 %} checked{% endif %}>
+                        {% endif %}
+                        <span>
+                            <strong>{{ hotel.nombre }}</strong> ({{ hotel.categoria }})<br>
+                            <span class="text-muted small">{{ hotel.ciudad }} - {{ hotel.direccion }}</span>
+                        </span>
+                    </label>
                 </li>
                 {% empty %}
                 <li class="list-group-item text-muted">Sin hoteles registrados.</li>
                 {% endfor %}
             </ul>
+            {% if paquete.cupos_disponibles > 0 and paquete.hoteles.exists %}
+            <div class="card-footer bg-white small text-muted">
+                Elige 1 hotel para tu paquete.
+            </div>
+            {% endif %}
         </div>
     </div>
 
     <div class="col-md-4">
         <div class="card h-100 border-0 shadow-sm">
-            <div class="card-header bg-primary text-white fw-bold"><i class="bi bi-airplane me-2"></i>Vuelos Disponibles</div>
+            <div class="card-header bg-primary text-white fw-bold d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-airplane me-2"></i>Vuelos</span>
+                <span class="badge bg-light text-dark" id="contador-vuelos">0 / 1</span>
+            </div>
             <ul class="list-group list-group-flush">
                 {% for vuelo in paquete.vuelos.all %}
-                <li class="list-group-item">
-                    <strong>{{ vuelo.aerolinea }}</strong><br>
-                    <span class="text-muted small">{{ vuelo.ciudad_origen }} &rarr; {{ vuelo.ciudad_destino }}</span><br>
-                    <span class="text-muted small">Salida: {{ vuelo.fecha_salida|date:"d/m/Y" }} {{ vuelo.hora_salida|time:"H:i" }}</span>
+                <li class="list-group-item p-0">
+                    <label class="d-flex gap-3 p-3 mb-0 w-100" for="vuelo-{{ vuelo.id }}" style="cursor: pointer;">
+                        {% if paquete.cupos_disponibles > 0 %}
+                        <input class="form-check-input flex-shrink-0 mt-1 chk-vuelo" type="radio"
+                            id="vuelo-{{ vuelo.id }}" name="vuelos" value="{{ vuelo.id }}"
+                            form="form-reserva"{% if paquete.vuelos.count == 1 %} checked{% endif %}>
+                        {% endif %}
+                        <span>
+                            <strong>{{ vuelo.aerolinea }}</strong><br>
+                            <span class="text-muted small">{{ vuelo.ciudad_origen }} &rarr; {{ vuelo.ciudad_destino }}</span><br>
+                            <span class="text-muted small">Salida: {{ vuelo.fecha_salida|date:"d/m/Y" }} {{ vuelo.hora_salida|time:"H:i" }}</span>
+                        </span>
+                    </label>
                 </li>
                 {% empty %}
                 <li class="list-group-item text-muted">Sin vuelos registrados.</li>
                 {% endfor %}
             </ul>
+            {% if paquete.cupos_disponibles > 0 and paquete.vuelos.exists %}
+            <div class="card-footer bg-white small text-muted">
+                Elige 1 vuelo para tu paquete.
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>
 
 <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 mb-5 bg-white">
     <h3 class="h4 fw-bold mb-4">
-        <i class="bi bi-star-fill text-info me-2"></i>Reseñas de Pasajeros
+        <i class="bi bi-star-fill text-warning me-2"></i>Reseñas de Pasajeros
         {% if promedio %}
             <small class="text-muted fs-6">{{ promedio|floatformat:1 }}/5 ({{ resenas|length }})</small>
         {% endif %}
@@ -157,7 +192,7 @@
         <div class="mb-3 border-bottom pb-3">
             <div class="d-flex align-items-center mb-2">
                 <div class="fw-bold me-3">{{ resena.usuario.nombre }} {{ resena.usuario.apellido }}</div>
-                <div class="text-info">
+                <div class="text-warning">
                     {% for i in "12345" %}{% if forloop.counter <= resena.calificacion %}★{% else %}☆{% endif %}{% endfor %}
                 </div>
                 <small class="text-muted ms-auto">{{ resena.fecha_publicacion|date:"d M Y" }}</small>
@@ -171,35 +206,57 @@
 
 <script>
 (function () {
-    var MAX = 5, MIN_DESEADO = 3;
-    var checks = document.querySelectorAll('.chk-actividad');
     var boton = document.getElementById('btn-reservar');
-    var aviso = document.getElementById('aviso-actividades');
-    var contador = document.getElementById('contador-actividades');
-    if (!boton) return;                       
-    if (!checks.length) return;               
+    var aviso = document.getElementById('aviso-seleccion');
+    if (!boton) return;                      
 
-    var MIN = Math.min(MIN_DESEADO, checks.length);
+    var grupos = [
+        { etiqueta: 'actividad(es)', radio: false, checks: document.querySelectorAll('.chk-actividad'),
+        contador: document.getElementById('contador-actividades'), minDeseado: 3, max: 5 },
+        { etiqueta: 'hotel', radio: true, checks: document.querySelectorAll('.chk-hotel'),
+        contador: document.getElementById('contador-hoteles'), minDeseado: 1, max: 1 },
+        { etiqueta: 'vuelo', radio: true, checks: document.querySelectorAll('.chk-vuelo'),
+        contador: document.getElementById('contador-vuelos'), minDeseado: 1, max: 1 }
+    ].filter(function (g) { return g.checks.length > 0; });  
+
+    if (!grupos.length) return;
 
     function actualizar() {
-        var marcadas = 0;
-        checks.forEach(function (c) { if (c.checked) marcadas++; });
+        var valido = true, pendientes = [], libres = [];
 
-        checks.forEach(function (c) { c.disabled = !c.checked && marcadas >= MAX; });
+        grupos.forEach(function (g) {
+            var min = Math.min(g.minDeseado, g.checks.length);
+            var marcadas = 0;
+            g.checks.forEach(function (c) { if (c.checked) marcadas++; });
 
-        contador.textContent = marcadas + ' / ' + MAX;
-        boton.disabled = marcadas < MIN || marcadas > MAX;
+            if (!g.radio) {
+                g.checks.forEach(function (c) { c.disabled = !c.checked && marcadas >= g.max; });
+            }
 
-        if (marcadas < MIN) {
-            aviso.textContent = 'Selecciona ' + (MIN - marcadas) + ' actividad(es) más para reservar.';
-        } else if (marcadas < MAX) {
-            aviso.textContent = 'Puedes añadir ' + (MAX - marcadas) + ' más.';
+            g.contador.textContent = marcadas + ' / ' + g.max;
+
+            if (marcadas < min) {
+                valido = false;
+                pendientes.push((min - marcadas) + ' ' + g.etiqueta + (g.radio ? '' : ' más'));
+            } else if (marcadas < g.max) {
+                libres.push((g.max - marcadas) + ' ' + g.etiqueta);
+            }
+        });
+
+        boton.disabled = !valido;
+
+        if (!valido) {
+            aviso.textContent = 'Selecciona ' + pendientes.join(' y ') + ' para reservar.';
+        } else if (libres.length) {
+            aviso.textContent = 'Aún puedes añadir hasta ' + libres.join(' y ') + '.';
         } else {
-            aviso.textContent = 'Alcanzaste el máximo de ' + MAX + ' actividades.';
+            aviso.textContent = 'Tu selección está completa.';
         }
     }
 
-    checks.forEach(function (c) { c.addEventListener('change', actualizar); });
+    grupos.forEach(function (g) {
+        g.checks.forEach(function (c) { c.addEventListener('change', actualizar); });
+    });
     actualizar();
 })();
 </script>

@@ -1,15 +1,38 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from apps.catalogo.models import Paquete, Itinerario
+from apps.catalogo.models import Paquete
 from apps.usuarios.models import Usuario
 from apps.pedidos.models import Reserva, Pago
 from apps.usuarios.views import login_requerido_custom
 
 MIN_ACTIVIDADES = 3
 MAX_ACTIVIDADES = 5
+MIN_HOTELES = 1
+MAX_HOTELES = 1
+MIN_VUELOS = 1
+MAX_VUELOS = 1
 
 def _obtener_carrito(request):
     return request.session.setdefault('carrito', {})
+
+def _validar_seleccion(datos, campo, opciones, min_deseado, maximo, etiqueta, singular=None):
+    total = opciones.count()
+    if total == 0:
+        return [], None
+
+    minimo = min(min_deseado, total)
+    ids = {int(x) for x in datos.getlist(campo) if x.isdigit()}
+
+    if not (minimo <= len(ids) <= maximo):
+        if minimo == maximo == 1 and singular:
+            return None, f"Elige 1 {singular}."
+        return None, f"Elige entre {minimo} y {maximo} {etiqueta}."
+
+    elegidos = list(opciones.filter(id__in=ids))
+    if len(elegidos) != len(ids):
+        return None, f"La selección de {etiqueta} no es válida."
+
+    return elegidos, None
 
 def carrito_ver(request):
     carrito = _obtener_carrito(request)
@@ -29,36 +52,38 @@ def carrito_agregar(request, id):
     carrito = _obtener_carrito(request)
     str_id = str(paquete.id)
 
-    # Acepta GET (formulario actual) o POST (si luego lo cambias a POST)
     datos = request.POST if request.method == 'POST' else request.GET
+    sin_seleccion = (not datos.getlist('actividades') and not datos.getlist('hoteles') and not datos.getlist('vuelos'))
 
-    # --- Validación de actividades: mínimo 3, máximo 5 ---
-    itinerarios = paquete.itinerarios.all()
-    total_disponibles = itinerarios.count()
-    actividades_carrito = []
-
-    if str_id in carrito and not datos.getlist('actividades'):
-        # Botón "+" del carrito: suma un pasajero y conserva las actividades ya elegidas
+    if str_id in carrito and sin_seleccion:
         actividades_carrito = carrito[str_id].get('actividades', [])
-    elif total_disponibles > 0:
-        # Si el paquete tiene menos de 3 actividades, el mínimo es el total que existe
-        minimo = min(MIN_ACTIVIDADES, total_disponibles)
-        ids_elegidos = {int(x) for x in datos.getlist('actividades') if x.isdigit()}
-
-        if not (minimo <= len(ids_elegidos) <= MAX_ACTIVIDADES):
-            messages.warning(
-                request,
-                f"Elige entre {minimo} y {MAX_ACTIVIDADES} actividades para reservar '{paquete.nombre}'."
-            )
-            return redirect('catalogo:detalle', paquete.id)   # <- ajusta al nombre real de tu URL de detalle
-
-        elegidas = itinerarios.filter(id__in=ids_elegidos).order_by('dia', 'horario')
-        if elegidas.count() != len(ids_elegidos):
-            # llegó algún id que no pertenece a este paquete
-            messages.error(request, "La selección de actividades no es válida.")
+        hoteles_carrito = carrito[str_id].get('hoteles', [])
+        vuelos_carrito = carrito[str_id].get('vuelos', [])
+    else:
+        actividades, error = _validar_seleccion(
+            datos, 'actividades', paquete.itinerarios.order_by('dia', 'horario'),
+            MIN_ACTIVIDADES, MAX_ACTIVIDADES, 'actividades')
+        if error:
+            messages.warning(request, f"{error} Paquete '{paquete.nombre}'.")
             return redirect('catalogo:detalle', paquete.id)
 
-        actividades_carrito = [{'id': a.id, 'nombre': a.actividad} for a in elegidas]
+        hoteles, error = _validar_seleccion(
+            datos, 'hoteles', paquete.hoteles.order_by('nombre'),
+            MIN_HOTELES, MAX_HOTELES, 'hoteles', singular='hotel')
+        if error:
+            messages.warning(request, f"{error} Paquete '{paquete.nombre}'.")
+            return redirect('catalogo:detalle', paquete.id)
+
+        vuelos, error = _validar_seleccion(
+            datos, 'vuelos', paquete.vuelos.order_by('fecha_salida', 'hora_salida'),
+            MIN_VUELOS, MAX_VUELOS, 'vuelos', singular='vuelo')
+        if error:
+            messages.warning(request, f"{error} Paquete '{paquete.nombre}'.")
+            return redirect('catalogo:detalle', paquete.id)
+
+        actividades_carrito = [{'id': a.id, 'nombre': a.actividad} for a in actividades]
+        hoteles_carrito = [{'id': h.id, 'nombre': h.nombre, 'ciudad': h.ciudad} for h in hoteles]
+        vuelos_carrito = [{'id': f.id, 'nombre': f.aerolinea, 'ruta': f"{f.ciudad_origen} → {f.ciudad_destino}"} for f in vuelos]
 
     cantidad_actual = carrito.get(str_id, {}).get('cantidad', 0)
     nueva_cantidad = cantidad_actual + 1
@@ -74,6 +99,8 @@ def carrito_agregar(request, id):
         'cantidad': nueva_cantidad,
         'subtotal': int(paquete.precio_paquete) * nueva_cantidad,
         'actividades': actividades_carrito,
+        'hoteles': hoteles_carrito,
+        'vuelos': vuelos_carrito,
     }
 
     request.session.modified = True
@@ -133,12 +160,17 @@ def checkout_simulado(request):
                 precio_total=valor_con_iva
             )
 
-            # Guarda las actividades elegidas (solo las que pertenecen al paquete)
             ids_actividades = [a['id'] for a in item.get('actividades', [])]
             if ids_actividades:
-                reserva.actividades.set(
-                    Itinerario.objects.filter(paquete=paquete, id__in=ids_actividades)
-                )
+                reserva.actividades.set(paquete.itinerarios.filter(id__in=ids_actividades))
+
+            ids_hoteles = [h['id'] for h in item.get('hoteles', [])]
+            if ids_hoteles:
+                reserva.hoteles.set(paquete.hoteles.filter(id__in=ids_hoteles))
+
+            ids_vuelos = [f['id'] for f in item.get('vuelos', [])]
+            if ids_vuelos:
+                reserva.vuelos.set(paquete.vuelos.filter(id__in=ids_vuelos))
 
             Pago.objects.create(
                 reserva=reserva,

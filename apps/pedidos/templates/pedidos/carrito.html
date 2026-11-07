@@ -53,10 +53,26 @@
                                     {{ item.nombre }}
                                 </a>
                                 {% if item.actividades %}
-                                <div class="small text-muted mt-2">Itinerario:</div>
+                                <div class="small text-muted mt-2">{{ item.actividades|length }} actividades elegidas:</div>
                                 <ul class="list-unstyled small text-muted mb-0">
                                     {% for a in item.actividades %}
                                     <li><i class="bi bi-check2 text-info me-1"></i>{{ a.nombre }}</li>
+                                    {% endfor %}
+                                </ul>
+                                {% endif %}
+                                {% if item.hoteles %}
+                                <div class="small text-muted mt-2">Hotel elegido:</div>
+                                <ul class="list-unstyled small text-muted mb-0">
+                                    {% for h in item.hoteles %}
+                                    <li><i class="bi bi-building text-info me-1"></i>{{ h.nombre }} ({{ h.ciudad }})</li>
+                                    {% endfor %}
+                                </ul>
+                                {% endif %}
+                                {% if item.vuelos %}
+                                <div class="small text-muted mt-2">Vuelo elegido:</div>
+                                <ul class="list-unstyled small text-muted mb-0">
+                                    {% for f in item.vuelos %}
+                                    <li><i class="bi bi-airplane text-info me-1"></i>{{ f.nombre }}: {{ f.ruta }}</li>
                                     {% endfor %}
                                 </ul>
                                 {% endif %}
