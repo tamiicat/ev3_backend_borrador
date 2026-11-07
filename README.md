@@ -26,25 +26,25 @@ cd ev3_backend
 
 **2. Crear y activar el entorno virtual**\
 En Windows (PowerShell/CMD):\
-python -m venv venv
+python -m venv venv\
 venv\Scripts\activate
 
 En macOS/Linux:\
-python3 -m venv venv
+python3 -m venv venv\
 source venv/bin/activate
 
 **3. Instalar las dependencias**\
 pip install -r requirements.txt
 
 **4. Aplicar las migraciones de la Base de Datos**\
-python manage.py makemigrations
+python manage.py makemigrations\
 python manage.py migrate
 
 **5. Poblar la Base de Datos (Opcional pero Recomendado)**\
 python manage.py poblar_nomade
 
 **6. Iniciar el Servidor de Desarrollo**\
-python manage.py runserver
+python manage.py runserver 8080
 
 Abrir navegador web y visitar: http://127.0.0.1:8000/
 
