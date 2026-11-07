@@ -26,12 +26,12 @@ cd ev3_backend
 
 **2. Crear y activar el entorno virtual**\
 En Windows (PowerShell/CMD):\
-python -m venv venv\
-venv\Scripts\activate\
+python -m venv venv
+venv\Scripts\activate
 
 En macOS/Linux:\
-python3 -m venv venv\
-source venv/bin/activate\
+python3 -m venv venv
+source venv/bin/activate
 
 **3. Instalar las dependencias**\
 pip install -r requirements.txt
@@ -48,8 +48,8 @@ python manage.py runserver
 
 Abrir navegador web y visitar: http://127.0.0.1:8000/
 
-## Credenciales de Acceso\
-**Usuario Administrador**\
+## Credenciales de Acceso
+**Usuario Administrador**
 *   Correo Electrónico: admin@nomade.cl
 *   Password: admin
 
