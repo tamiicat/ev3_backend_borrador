@@ -21,8 +21,7 @@ Sigue estos pasos en tu terminal para ejecutar el proyecto de forma local sin pr
 
 **1. Clonar el repositorio**\
 git clone https://github.com/tamiicat/ev3_backend_borrador
-
-cd ev3_backend
+Abrir carpeta del proyecto: cd ev3_backend
 
 **2. Crear y activar el entorno virtual**\
 En Windows (PowerShell/CMD):\
