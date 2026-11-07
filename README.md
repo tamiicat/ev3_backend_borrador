@@ -44,7 +44,7 @@ python manage.py migrate
 python manage.py poblar_nomade
 
 **6. Iniciar el Servidor de Desarrollo**\
-python manage.py runserver 8080
+python manage.py runserver
 
 Abrir navegador web y visitar: http://127.0.0.1:8000/
 
