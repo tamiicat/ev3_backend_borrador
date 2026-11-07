@@ -19,38 +19,38 @@ Antes de comenzar, asegúrate de tener instalado en tu sistema:
 
 Sigue estos pasos en tu terminal para ejecutar el proyecto de forma local sin problemas de dependencias:
 
-**1. Clonar el repositorio**
+**1. Clonar el repositorio**\
 git clone https://github.com/tamiicat/ev3_backend_borrador
 
 cd ev3_backend
 
-**2. Crear y activar el entorno virtual**
-En Windows (PowerShell/CMD):
-python -m venv venv
-venv\Scripts\activate
+**2. Crear y activar el entorno virtual**\
+En Windows (PowerShell/CMD):\
+python -m venv venv\
+venv\Scripts\activate\
 
-En macOS/Linux:
-python3 -m venv venv
-source venv/bin/activate
+En macOS/Linux:\
+python3 -m venv venv\
+source venv/bin/activate\
 
-**3. Instalar las dependencias**
+**3. Instalar las dependencias**\
 pip install -r requirements.txt
 
-**4. Aplicar las migraciones de la Base de Datos**
+**4. Aplicar las migraciones de la Base de Datos**\
 python manage.py makemigrations
 python manage.py migrate
 
-**5. Poblar la Base de Datos (Opcional pero Recomendado)**
+**5. Poblar la Base de Datos (Opcional pero Recomendado)**\
 python manage.py poblar_nomade
 
-**6. Iniciar el Servidor de Desarrollo**
+**6. Iniciar el Servidor de Desarrollo**\
 python manage.py runserver
 
 Abrir navegador web y visitar: http://127.0.0.1:8000/
 
-## Credenciales de Acceso
-**Usuario Administrador**
+## Credenciales de Acceso\
+**Usuario Administrador**\
 *   Correo Electrónico: admin@nomade.cl
 *   Password: admin
 
-Usamos IA xd
+## Usamos IA xd
