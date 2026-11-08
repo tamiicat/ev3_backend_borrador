@@ -45,14 +45,21 @@ class Vuelo(models.Model):
         return f"{self.aerolinea}: {self.ciudad_origen} -> {self.ciudad_destino}"
 
 class Paquete(models.Model):
+    ESTADOS_OPERATIVOS = [
+        ('Disponible', 'Disponible'),
+        ('Suspendido', 'Suspendido'),
+        ('Agotado', 'Agotado'),
+        ('En Curso', 'En Curso'),
+    ]
     nombre = models.CharField(max_length=200)
     slug = models.SlugField(max_length=220, unique=True, blank=True)
     categoria = models.ForeignKey(CategoriaDestino, on_delete=models.PROTECT, related_name="paquetes", null=True, verbose_name="Continente")
     descripcion = models.TextField()
-    precio_paquete = models.FloatField()
-    cupos_disponibles = models.IntegerField()
+    precio_paquete = models.FloatField(validators=[MinValueValidator(0.0)])
+    cupos_disponibles = models.IntegerField(validators=[MinValueValidator(0)])
     fecha_inicio = models.DateField()
     fecha_fin = models.DateField()
+    estado = models.CharField(max_length=20, choices=ESTADOS_OPERATIVOS, default='Disponible')
     
     imagen = models.ImageField(upload_to="paquetes/", blank=True, null=True, verbose_name="Imagen del Destino")
     activo = models.BooleanField(default=True, verbose_name="¿Activo?")
