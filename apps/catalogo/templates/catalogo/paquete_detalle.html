@@ -203,7 +203,7 @@
 <!-- sección de reseñas y calificaciones de pasajeros -->
 <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 mb-5 bg-white">
     <h3 class="h4 fw-bold mb-4">
-        <i class="bi bi-star-fill text-warning me-2"></i>Reseñas de Pasajeros
+        <i class="bi bi-star-fill text-info me-2"></i>Reseñas de Pasajeros
         {% if promedio %}
             <small class="text-muted fs-6">{{ promedio|floatformat:1 }}/5 ({{ resenas|length }})</small>
         {% endif %}
@@ -214,7 +214,7 @@
         <div class="mb-3 border-bottom pb-3">
             <div class="d-flex align-items-center mb-2">
                 <div class="fw-bold me-3">{{ resena.usuario.nombre }} {{ resena.usuario.apellido }}</div>
-                <div class="text-warning">
+                <div class="text-info">
                     {# bucle interno para renderizar estrellas pintadas o vacías según la calificación numérica #}
                     {% for i in "12345" %}{% if forloop.counter <= resena.calificacion %}★{% else %}☆{% endif %}{% endfor %}
                 </div>

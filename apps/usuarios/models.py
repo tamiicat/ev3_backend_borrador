@@ -11,7 +11,7 @@ class Usuario(models.Model):
     rut = models.CharField(max_length=20, unique=True)
     nombre = models.CharField(max_length=100)
     apellido = models.CharField(max_length=100)
-    telefono = models.IntegerField()
+    telefono = models.CharField(max_length=12)
     correo_electronico = models.EmailField(unique=True)   # se usa como "usuario" para iniciar sesión
     # se guarda el HASH de la contraseña (nunca el texto original) - hash PBKDF2
     contrasena = models.CharField(max_length=128)

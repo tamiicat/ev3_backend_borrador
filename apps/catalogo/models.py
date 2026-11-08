@@ -22,10 +22,18 @@ class CategoriaDestino(models.Model):
 
 class Hotel(models.Model):
     # hotel que puede incluirse en uno o varios paquetes.
+    CATEGORIAS = [
+        (1, '★ (1 estrella)'),
+        (2, '★★ (2 estrellas)'),
+        (3, '★★★ (3 estrellas)'),
+        (4, '★★★★ (4 estrellas)'),
+        (5, '★★★★★ (5 estrellas)'),
+    ]
+
     nombre = models.CharField(max_length=150)
     ciudad = models.CharField(max_length=100)
     direccion = models.CharField(max_length=200)
-    categoria = models.CharField(max_length=50)     # texto libre, ej. "5 Estrellas"
+    categoria = models.PositiveSmallIntegerField(choices=CATEGORIAS, default=3)  # 1 a 5 estrellas
     habitacion = models.IntegerField()              # cantidad de habitaciones del hotel
     servicios = models.BooleanField(default=False)  # ¿incluye servicios adicionales?
 

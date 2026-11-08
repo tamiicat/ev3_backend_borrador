@@ -99,7 +99,7 @@ class HotelForm(forms.ModelForm):
             'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Inca Imperial'}),
             'ciudad': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Cusco'}),
             'direccion': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. Calle Ruinas 465'}),
-            'categoria': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. 3 Estrellas'}),
+            'categoria': forms.Select(attrs={'class': 'form-select'}),
             'habitacion': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
             'servicios': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
