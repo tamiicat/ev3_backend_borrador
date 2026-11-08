@@ -14,8 +14,8 @@ from apps.usuarios.models import Usuario
 # CONTROL DE ACCESO
 def es_administrador(request):
     # el proyecto maneja DOS mecanismos de autenticación:
-    # a) Sesión propia: al iniciar sesión, el login guarda en request.session
-    # b) Autenticación estándar de Django (request.user): staff o superusuario.
+    # a) sesión propia: al iniciar sesión, el login guarda en request.session
+    # b) autenticación estándar de Django (request.user): staff o superusuario.
 
     if request.session.get('usuario_rol') == 'administrador':
         return True
@@ -57,7 +57,7 @@ def paquete_lista(request):
             Q(categoria__nombre__icontains=query)
         )
 
-    # Lista blanca de órdenes permitidos: el valor recibido por URL se traduce a un
+    # lista blanca de órdenes permitidos: el valor recibido por URL se traduce a un
     # campo real. Si llega algo no esperado, .get() usa '-fecha_inicio' por defecto,
     # evitando ordenar por campos arbitrarios enviados por el usuario.
     ordenes_validos = {
