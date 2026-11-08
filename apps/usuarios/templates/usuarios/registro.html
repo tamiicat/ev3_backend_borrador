@@ -6,6 +6,7 @@
 <div class="row justify-content-center">
     <div class="col-md-7 col-lg-6">
         <div class="card shadow-sm border-0 rounded-4 p-4 p-md-5 bg-white">
+            
             <div class="text-center mb-4">
                 <i class="bi bi-person-plus-fill text-info display-4"></i>
                 <h2 class="h4 fw-bold mt-2">Crear Cuenta de Viajero</h2>
@@ -13,24 +14,28 @@
             </div>
 
             <form method="post" novalidate>
+                
+                {# token de seguridad obligatorio de django (csrf) para prevenir ataques maliciosos externos #}
                 {% csrf_token %}
 
+                <!-- bloque de validación para desplegar errores generales del formulario si ocurren -->
                 {% if form.non_field_errors %}
                     <div class="alert alert-danger py-2 small">
                         {{ form.non_field_errors }}
                     </div>
                 {% endif %}
 
-                <!-- RUT -->
+                <!-- campo de entrada para el rut del viajero -->
                 <div class="mb-3">
                     <label for="{{ form.rut.id_for_label }}" class="form-label fw-semibold">{{ form.rut.label }}</label>
                     {{ form.rut }}
+                    {# valida de forma condicional si existen errores específicos en el campo rut y los muestra en rojo #}
                     {% if form.rut.errors %}
                         <div class="text-danger small mt-1">{{ form.rut.errors }}</div>
                     {% endif %}
                 </div>
 
-                <!-- Nombres y Apellidos -->
+                <!-- nombres y apellidos del usuario -->
                 <div class="row g-3 mb-3">
                     <div class="col-sm-6">
                         <label for="{{ form.nombre.id_for_label }}" class="form-label fw-semibold">{{ form.nombre.label }}</label>
@@ -48,7 +53,7 @@
                     </div>
                 </div>
 
-                <!-- Correo y Teléfono -->
+                <!-- correo electrónico y teléfono de contacto -->
                 <div class="row g-3 mb-3">
                     <div class="col-sm-7">
                         <label for="{{ form.correo_electronico.id_for_label }}" class="form-label fw-semibold">{{ form.correo_electronico.label }}</label>
@@ -66,7 +71,7 @@
                     </div>
                 </div>
 
-                <!-- Contraseña -->
+                <!-- contraseña -->
                 <div class="mb-4">
                     <label for="{{ form.contrasena.id_for_label }}" class="form-label fw-semibold">{{ form.contrasena.label }}</label>
                     {{ form.contrasena }}
@@ -75,13 +80,17 @@
                     {% endif %}
                 </div>
 
+                <!-- botonera de envío con diseño responsivo de ancho completo -->
                 <div class="d-grid gap-2">
                     <button type="submit" class="btn btn-info py-2 fw-bold text-dark">
                         <i class="bi bi-check-circle me-1"></i>Registrar Cuenta
                     </button>
                 </div>
             </form>
+            
             <hr class="my-4">
+            
+            <!-- sección de pie de tarjeta con enlace directo al inicio de sesión para usuarios existentes -->
             <div class="text-center">
                 <p class="text-muted small mb-0">¿Ya tienes una cuenta registrada? 
                     <a href="{% url 'usuarios:login' %}" class="fw-semibold text-info text-decoration-none">Inicia sesión</a>
