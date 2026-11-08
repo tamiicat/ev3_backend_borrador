@@ -3,6 +3,7 @@ from datetime import date, timedelta
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.contrib.auth.hashers import make_password
 from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand
 from django.utils.text import slugify
@@ -21,20 +22,17 @@ PAQUETES = [
         "inicio": "2027-01-15",
         "fin": "2027-01-22",
         "color": (255, 140, 0),
-        # creación de hoteles en diccionario
         "hoteles": [
             {"nombre": "Copacabana Palace", "ciudad": "Río de Janeiro", "direccion": "Av. Atlántica 1702", "categoria": "5 Estrellas", "habitacion": 101},
             {"nombre": "Fasano Rio de Janeiro", "ciudad": "Río de Janeiro", "direccion": "Av. Vieira Souto 80", "categoria": "5 Estrellas", "habitacion": 312},
         ],
         "destino_vuelo": "Río de Janeiro",
-        # creación de vuelos en tupla
         "vuelos": [
             ("LATAM", 0, "08:00", "12:30", 0),
             ("Sky Airlines", 0, "14:00", "18:45", 0),
             ("LATAM", 1, "07:30", "12:00", 0),
             ("Gol", 1, "16:00", "20:40", 0),
         ],
-        # creacipón de itinerarios en tupla
         "itinerario": [
             ("Llegada y check-in", "Recepción en el aeropuerto, traslado al hotel y tarde libre en Copacabana.", "15:00"),
             ("City Tour Río", "Visita al Cristo Redentor y al barrio de Santa Teresa.", "09:00"),
@@ -139,15 +137,9 @@ PAQUETES = [
 
 class Command(BaseCommand):
     def asignar_imagen(self, paquete, nombre, color):
-        """
-        asigna una imagen al paquete (campo ImageField "imagen").
-        1) Si el paquete ya tiene imagen, no hace nada.
-        2) Si existe una foto en MEDIA_ROOT/paquetes/<slug>.(jpg|jpeg|png|webp), la usa.
-        3) Si no hay foto real, genera una portada de color con Pillow.
-        """
         if paquete.imagen:
             return
-        # buscar foto real en 'media/paquetes
+
         carpeta = "paquetes"
         for ext in ("jpg", "jpeg", "png", "webp"):
             ruta = settings.MEDIA_ROOT / carpeta / f"{paquete.slug}.{ext}"
@@ -156,28 +148,26 @@ class Command(BaseCommand):
                 paquete.save()
                 return
 
-        # generar imagen con Pillow
         from PIL import Image, ImageDraw
 
         ancho, alto = 1200, 800
-        img = Image.new("RGB", (ancho, alto), color)  
+        img = Image.new("RGB", (ancho, alto), color)   # lienzo del color base
         draw = ImageDraw.Draw(img)
-        # degradado vertical.
+        # degradado vertical: se dibuja una línea horizontal
         for y in range(alto):
             f = 1 - (y / alto) * 0.6
             draw.line([(0, y), (ancho, y)], fill=tuple(int(c * f) for c in color))
         draw.text((60, alto - 120), nombre, fill=(255, 255, 255))
 
-        # guardar imagen
         buffer = io.BytesIO()
         img.save(buffer, format="JPEG", quality=85)
         paquete.imagen.save(f"{paquete.slug}.jpg", ContentFile(buffer.getvalue()), save=True)
 
     def handle(self, *args, **kwargs):
-        # creación de usuario administrador
+        # CREACIÓN DE ADMINISTRADOR
         if not User.objects.filter(username="admin").exists():
             User.objects.create_superuser("admin", "admin@nomade.cl", "admin")
-
+            
         if not Usuario.objects.filter(correo_electronico="admin@nomade.cl").exists():
             Usuario.objects.create(
                 rut="12345678-9",
@@ -185,19 +175,18 @@ class Command(BaseCommand):
                 apellido="Nomade",
                 telefono=987654321,
                 correo_electronico="admin@nomade.cl",
-                contrasena="admin",
+                contrasena=make_password("admin"),
                 rol="administrador",
             )
-        # mensaje de éxito de creación de usuario administrador
+        # mensaje de creación exitosa de admin
         self.stdout.write(self.style.SUCCESS("✓ Usuario administrador creado."))
 
-        # categorías de destino (continentes)
+        # CATEGORÍAS - DESTINOS
         nombres_continentes = [
             "África", "América del Norte", "América del Sur", "Asia",
             "Centroamérica y Caribe", "Europa", "Oceanía", "Medio Oriente",
         ]
 
-        # diccionario de categorías
         categorias = {}
         for nombre in nombres_continentes:
             cat, _ = CategoriaDestino.objects.get_or_create(
@@ -206,7 +195,7 @@ class Command(BaseCommand):
             )
             categorias[nombre] = cat
 
-        # PAQUETES TURÍSTICOS CON ITINERARIO, VUELOS Y HOTELES
+        # PAQUETES CON SUS HOTELES, VUELOS E ITINERARIO
         for datos in PAQUETES:
             paquete, creado = Paquete.objects.get_or_create(
                 nombre=datos["nombre"],
@@ -221,7 +210,6 @@ class Command(BaseCommand):
                 },
             )
 
-            # imagen paquete
             self.asignar_imagen(paquete, datos["nombre"], datos["color"])
 
             # hoteles
@@ -238,7 +226,7 @@ class Command(BaseCommand):
                 )
                 paquete.hoteles.add(hotel)
 
-            # vuelos
+            # vuelos 
             fecha_base = date.fromisoformat(datos["inicio"])
             for aerolinea, desplaz, hora_sal, hora_lle, dias_lle in datos["vuelos"]:
                 f_salida = fecha_base + timedelta(days=desplaz)
@@ -256,16 +244,16 @@ class Command(BaseCommand):
                 )
                 paquete.vuelos.add(vuelo)
 
-            # itinerario
+            # itinerario 
             for i, (actividad, descripcion, horario) in enumerate(datos["itinerario"]):
-                dia = fecha_base + timedelta(days=i)  
+                dia = fecha_base + timedelta(days=i)   # día 1 = inicio, día 2 = inicio+1, ...
                 Itinerario.objects.get_or_create(
                     paquete=paquete,
                     dia=dia.isoformat(),
                     actividad=actividad,
                     defaults={"descripcion": descripcion, "horario": horario},
                 )
-                
+
             estado = "creado" if creado else "ya existía (relaciones verificadas)"
 
         self.stdout.write(self.style.SUCCESS("✓ Base de datos poblada exitosamente"))

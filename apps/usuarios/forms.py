@@ -2,7 +2,6 @@ from django import forms
 from .models import Usuario
 
 class RegistroForm(forms.ModelForm):
-    # se redeclara "contrasena" para mostrarla como campo de contraseña
     contrasena = forms.CharField(
         label="Contraseña", 
         widget=forms.PasswordInput(attrs={'class': 'form-control'})
@@ -19,7 +18,7 @@ class RegistroForm(forms.ModelForm):
             'telefono': forms.NumberInput(attrs={'class': 'form-control'}),
             'correo_electronico': forms.EmailInput(attrs={'class': 'form-control'}),
         }
-
+        
     def clean_correo_electronico(self):
         email = self.cleaned_data.get('correo_electronico')
         if Usuario.objects.filter(correo_electronico=email).exists():
@@ -31,6 +30,15 @@ class RegistroForm(forms.ModelForm):
         if Usuario.objects.filter(rut=rut).exists():
             raise forms.ValidationError("Este RUT ya está registrado.")
         return rut
+
+    def save(self, commit=True):
+        # se cifra la contraseña ANTES de guardar
+        usuario = super().save(commit=False)
+        usuario.set_password(self.cleaned_data['contrasena'])
+        if commit:
+            usuario.save()
+        return usuario
+
 
 class LoginForm(forms.Form):
     correo_electronico = forms.EmailField(

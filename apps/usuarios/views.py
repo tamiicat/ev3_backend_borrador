@@ -7,7 +7,6 @@ from .models import Usuario
 from apps.catalogo.models import Resena
 
 def login_requerido_custom(view_func):
-    # decorador: solo deja pasar a quien tenga sesión iniciada con el sistema propio
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
         if not request.session.get('usuario_id'):
@@ -25,7 +24,6 @@ def registro_usuario(request):
         form = RegistroForm(request.POST)
         if form.is_valid():
             usuario = form.save(commit=False)
-            # el rol se fuerza a 'cliente' desde el servidor: así nadie puede registrarse como administrador manipulando el formulario.
             usuario.rol = 'cliente'
             usuario.save()
 
@@ -40,7 +38,6 @@ def registro_usuario(request):
     return render(request, 'usuarios/registro.html', {'form': form})
 
 def _destino_seguro(request, destino):
-    # redirección tras el login según el parámetro "next".
     if not destino:
         return 'catalogo:lista'
     if destino.startswith('/'):
@@ -58,18 +55,15 @@ def login_usuario(request):
         if form.is_valid():
             correo = form.cleaned_data.get('correo_electronico')
             contrasena = form.cleaned_data.get('contrasena')
-
-            try:
-                # la contraseña se compara directamente con lo guardado en la BD
-                usuario = Usuario.objects.get(correo_electronico=correo, contrasena=contrasena)
+            usuario = Usuario.objects.filter(correo_electronico=correo).first()
+            if usuario and usuario.check_password(contrasena):
                 request.session['usuario_id'] = usuario.id
                 request.session['usuario_rol'] = usuario.rol
                 request.session['usuario_nombre'] = usuario.nombre
                 messages.success(request, f"¡Bienvenido {usuario.nombre}! Sesión iniciada correctamente.")
                 return redirect(_destino_seguro(request, request.POST.get('next')))
-            except Usuario.DoesNotExist:
-                # mensaje: no revela si falló el correo o la contraseña.
-                messages.error(request, "Correo o contraseña incorrectos.")
+            # mensaje: no revela si falló el correo o la contraseña.
+            messages.error(request, "Correo o contraseña incorrectos.")
     else:
         form = LoginForm()
     return render(request, 'usuarios/login.html', {'form': form, 'next': request.GET.get('next', 'catalogo:lista')})
@@ -83,7 +77,7 @@ def logout_usuario(request):
 @login_requerido_custom
 def perfil_usuario(request):
     usuario = Usuario.objects.get(id=request.session['usuario_id'])
-    # select_related('paquete') trae el paquete de cada reserva en la misma consulta.
+    # select_related('paquete') trae el paquete de cada reserva en la misma consulta
     reservas = list(usuario.reservas.select_related('paquete').order_by('-fecha'))
     # diccionario con las reseñas que este usuario ya escribió.
     resenas = {r.paquete_id: r for r in Resena.objects.filter(usuario=usuario)}
