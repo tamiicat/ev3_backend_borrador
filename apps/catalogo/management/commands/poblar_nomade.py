@@ -10,7 +10,6 @@ from django.utils.text import slugify
 from apps.catalogo.models import Paquete, Hotel, Vuelo, Itinerario, CategoriaDestino
 from apps.usuarios.models import Usuario
 
-
 # CREACIÓN DE PAQUETES TURÍSTICOS
 PAQUETES = [
     {

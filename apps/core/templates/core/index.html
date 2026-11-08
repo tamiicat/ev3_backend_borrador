@@ -24,14 +24,15 @@
         </div>
     </div>
 </div>
-
+<!-- contenedor principal de los destinos destacados -->
 <div class="mb-5">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="h4 fw-bold mb-0"><i class="bi bi-star-fill text-info me-2"></i>Próximos Destinos</h2>
         <a href="{% url 'catalogo:lista' %}" class="btn btn-outline-dark btn-sm">Ver todos los paquetes</a>
     </div>
-
+    <!-- rejilla (grid) de Bootstrap para organizar las tarjetas -->
     <div class="row g-4">
+        {# Ciclo iterativo de Django: recorre los objetos enviados en la variable de contexto 'paquetes_destacados' desde el backend #}
         {% for paquete in paquetes_destacados %}
         <div class="col-md-6 col-lg-3">
             <div class="card h-100 shadow-sm border">

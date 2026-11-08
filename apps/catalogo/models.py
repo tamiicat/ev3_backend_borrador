@@ -2,7 +2,6 @@ from django.db import models
 from django.utils.text import slugify
 from django.core.validators import MinValueValidator, MaxValueValidator
 
-
 class CategoriaDestino(models.Model):
     # categoría o agrupación geográfica de los paquetes (África, Europa, Asia, etc.)..
     nombre = models.CharField(max_length=100, unique=True, verbose_name="Continente o Región")
@@ -21,7 +20,6 @@ class CategoriaDestino(models.Model):
             self.slug = slugify(self.nombre)
         super().save(*args, **kwargs)  # guarda en la BD
 
-
 class Hotel(models.Model):
     # hotel que puede incluirse en uno o varios paquetes.
     nombre = models.CharField(max_length=150)
@@ -37,7 +35,6 @@ class Hotel(models.Model):
     def __str__(self):
         return f"{self.nombre} ({self.ciudad})"
 
-
 class Vuelo(models.Model):
     # vuelo disponible. Se asocia a los paquetes mediante la relación.
     aerolinea = models.CharField(max_length=100)
@@ -51,7 +48,6 @@ class Vuelo(models.Model):
 
     def __str__(self):
         return f"{self.aerolinea}: {self.ciudad_origen} -> {self.ciudad_destino}"
-
 
 class Paquete(models.Model):
     # estado operativo del paquete (disponible, suspendido, agotado, en curso)
@@ -111,7 +107,6 @@ class Paquete(models.Model):
             self.slug = slug
         super().save(*args, **kwargs)
 
-
 class Itinerario(models.Model):
     # una actividad dentro del itinerario de un paquete (una fila = una actividad).
     paquete = models.ForeignKey(Paquete, on_delete=models.CASCADE, related_name="itinerarios")
@@ -122,7 +117,6 @@ class Itinerario(models.Model):
 
     def __str__(self):
         return f"{self.actividad} ({self.dia})"
-
 
 class Resena(models.Model):
     # reseña (calificación + comentario) que un usuario deja sobre un paquete.
