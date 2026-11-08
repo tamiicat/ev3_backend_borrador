@@ -2,6 +2,7 @@ from django import forms
 from .models import Usuario
 
 class RegistroForm(forms.ModelForm):
+    # se redeclara "contrasena" para mostrarla como campo de contraseña
     contrasena = forms.CharField(
         label="Contraseña", 
         widget=forms.PasswordInput(attrs={'class': 'form-control'})
@@ -9,6 +10,7 @@ class RegistroForm(forms.ModelForm):
 
     class Meta:
         model = Usuario
+        # "rol" no está en la lista: lo fija la vista (siempre 'cliente').
         fields = ['rut', 'nombre', 'apellido', 'telefono', 'correo_electronico', 'contrasena']
         widgets = {
             'rut': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. 12345678-9'}),
@@ -29,7 +31,6 @@ class RegistroForm(forms.ModelForm):
         if Usuario.objects.filter(rut=rut).exists():
             raise forms.ValidationError("Este RUT ya está registrado.")
         return rut
-
 
 class LoginForm(forms.Form):
     correo_electronico = forms.EmailField(
