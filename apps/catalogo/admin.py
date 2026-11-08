@@ -1,10 +1,11 @@
 from django.contrib import admin
 from .models import Hotel, Vuelo, Paquete, Itinerario, Resena
 
-# Personalización del panel principal
-admin.site.site_header = "Agencia de Viajes - Panel de Administración"
-admin.site.site_title = "Admin Viajes"
-admin.site.index_title = "Gestión de Catálogo y Reservas"
+# personalización del panel de administración
+admin.site.site_header = "Agencia de Viajes - Panel de Administración"   # barra superior
+admin.site.site_title = "Admin Viajes"                                   # título de la pestaña
+admin.site.index_title = "Gestión de Catálogo y Reservas"                # título de la portada
+
 
 @admin.register(Hotel)
 class HotelAdmin(admin.ModelAdmin):
@@ -14,6 +15,7 @@ class HotelAdmin(admin.ModelAdmin):
     list_editable = ('servicios', 'categoria')
     list_per_page = 15
 
+
 @admin.register(Vuelo)
 class VueloAdmin(admin.ModelAdmin):
     list_display = ('aerolinea', 'ciudad_origen', 'ciudad_destino', 'fecha_salida', 'hora_salida', 'fecha_llegada')
@@ -21,12 +23,14 @@ class VueloAdmin(admin.ModelAdmin):
     search_fields = ('aerolinea', 'ciudad_origen', 'ciudad_destino')
     list_per_page = 15
 
+
 @admin.register(Paquete)
 class PaqueteAdmin(admin.ModelAdmin):
     list_display = ('id', 'nombre', 'categoria', 'precio_paquete', 'cupos_disponibles', 'fecha_inicio')
     list_filter = ('categoria', 'fecha_inicio', 'fecha_fin')
     search_fields = ('id', 'nombre', 'descripcion')
     list_editable = ('precio_paquete', 'cupos_disponibles')
+
     fieldsets = (
         ('Información Principal', {
             'fields': ('nombre', 'categoria', 'descripcion')
@@ -39,11 +43,13 @@ class PaqueteAdmin(admin.ModelAdmin):
         }),
         ('Servicios Incluidos (Relaciones)', {
             'fields': ('hoteles', 'vuelos'),
-            'classes': ('collapse',) 
+            'classes': ('collapse',)
         }),
     )
+    # reemplaza el <select multiple> por un selector de dos columnas (disponibles / elegidos)
     filter_horizontal = ('hoteles', 'vuelos')
     list_per_page = 15
+
 
 @admin.register(Itinerario)
 class ItinerarioAdmin(admin.ModelAdmin):
@@ -51,6 +57,7 @@ class ItinerarioAdmin(admin.ModelAdmin):
     list_filter = ('paquete', 'dia')
     search_fields = ('actividad', 'descripcion', 'paquete__nombre')
     list_per_page = 20
+
 
 @admin.register(Resena)
 class ResenaAdmin(admin.ModelAdmin):

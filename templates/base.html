@@ -37,8 +37,8 @@
                         {% endif %}
                     </ul>
                     <div class="d-flex align-items-center gap-3">
-                        <a href="{% url 'pedidos:ver' %}" class="btn btn-outline-info position-relative" title="Mis Reservas">
-                            <i class="bi bi-calendar2-check"></i>
+                        <a href="{% url 'pedidos:ver' %}" class="btn btn-outline-info position-relative" title="Carrito de Compras">
+                            <i class="bi bi-cart-plus"></i>
                             {% if carrito_total_items > 0 %}
                                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                                     {{ carrito_total_items }}

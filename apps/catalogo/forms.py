@@ -2,8 +2,11 @@ from django import forms
 from .models import Paquete, Itinerario, Hotel, Vuelo
 
 class PaqueteForm(forms.ModelForm):
+    # formulario para crear paquetes turísticos
+
     class Meta:
         model = Paquete
+        # incluyen: el slug se genera solo y el estado queda en su valor por defecto.
         fields = [
             'nombre', 'categoria', 'descripcion', 'precio_paquete',
             'cupos_disponibles', 'fecha_inicio', 'fecha_fin',
@@ -37,12 +40,14 @@ class PaqueteForm(forms.ModelForm):
         }
 
     def clean_precio_paquete(self):
+        # validación de un campo, se ejecuta automáticamente para 'precio_paquete'
         precio = self.cleaned_data.get('precio_paquete')
         if precio is not None and precio <= 0:
             raise forms.ValidationError("El precio del paquete debe ser superior a 0 CLP.")
         return precio
 
     def clean(self):
+        # validación de varios campos
         cleaned = super().clean()
         inicio, fin = cleaned.get('fecha_inicio'), cleaned.get('fecha_fin')
         if inicio and fin and fin < inicio:
@@ -50,6 +55,7 @@ class PaqueteForm(forms.ModelForm):
         return cleaned
 
 class ItinerarioForm(forms.ModelForm):
+    # formulario para agregar/editar una actividad del itinerario
     class Meta:
         model = Itinerario
         fields = ['paquete', 'dia', 'actividad', 'descripcion', 'horario']
@@ -69,9 +75,10 @@ class ItinerarioForm(forms.ModelForm):
         }
 
 class HotelForm(forms.ModelForm):
+    # formulario de hotel
     paquetes = forms.ModelMultipleChoiceField(
-        queryset=Paquete.objects.all().order_by('nombre'),
-        required=False,
+        queryset=Paquete.objects.all().order_by('nombre'),   # opciones disponibles
+        required=False,                                      # puede quedar sin paquetes
         label='Paquetes donde se incluye',
         help_text='Mantén presionada la tecla Ctrl (o Cmd) para seleccionar varios paquetes.',
         widget=forms.SelectMultiple(attrs={'class': 'form-select', 'size': 6}),
@@ -103,19 +110,21 @@ class HotelForm(forms.ModelForm):
             self.fields['paquetes'].initial = self.instance.paquetes.all()
 
     def clean_habitacion(self):
+        # validación para que la cantidad de habitaciones sea positiva
         habitacion = self.cleaned_data.get('habitacion')
         if habitacion is not None and habitacion <= 0:
             raise forms.ValidationError("La cantidad de habitaciones debe ser mayor a 0.")
         return habitacion
 
     def save(self, commit=True):
+        # guarda hotel
         hotel = super().save(commit=commit)
         if commit:
             hotel.paquetes.set(self.cleaned_data['paquetes'])
         return hotel
 
-
 class VueloForm(forms.ModelForm):
+    # formulario de vuelo
     paquetes = forms.ModelMultipleChoiceField(
         queryset=Paquete.objects.all().order_by('nombre'),
         required=False,
@@ -155,22 +164,29 @@ class VueloForm(forms.ModelForm):
             self.fields['paquetes'].initial = self.instance.paquetes.all()
 
     def clean(self):
+        # validaciones cruzadas entre origen/destino y fechas/horas."""
         cleaned = super().clean()
+
+        # origen y destino
         origen = (cleaned.get('ciudad_origen') or '').strip().lower()
         destino = (cleaned.get('ciudad_destino') or '').strip().lower()
         if origen and destino and origen == destino:
             self.add_error('ciudad_destino', "El destino no puede ser igual al origen.")
 
+        # coherencia entre fechas y horas
         f_sal, h_sal = cleaned.get('fecha_salida'), cleaned.get('hora_salida')
         f_lle, h_lle = cleaned.get('fecha_llegada'), cleaned.get('hora_llegada')
         if f_sal and f_lle:
             if f_lle < f_sal:
+                # selección inválida: llegada en un día anterior a la salida (imposible).
                 self.add_error('fecha_llegada', "La llegada no puede ser anterior a la salida.")
             elif f_lle == f_sal and h_sal and h_lle and h_lle <= h_sal:
+                # en caso del mismo día: la hora de llegada debe ser posterior a la de salida.
                 self.add_error('hora_llegada', "La hora de llegada debe ser posterior a la de salida.")
         return cleaned
 
     def save(self, commit=True):
+        # guarda el vuelo
         vuelo = super().save(commit=commit)
         if commit:
             vuelo.paquetes.set(self.cleaned_data['paquetes'])
